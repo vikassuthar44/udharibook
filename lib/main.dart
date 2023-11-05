@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:udhari_book/util/theme.dart';
 
 import 'database/drift_database/DatabaseDriftHelper.dart';
 import 'home/home_page.dart';
@@ -37,10 +38,7 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'Flutter Demo',
             debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-              useMaterial3: true,
-            ),
+            theme: AppTheme.lightTheme,
             home: const HomePage(title: 'Udhari Book'),
           );
         });
