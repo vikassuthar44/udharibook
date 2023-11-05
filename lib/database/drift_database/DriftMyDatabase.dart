@@ -48,13 +48,15 @@ class CustomerDao extends DatabaseAccessor<MyDatabase> with _$CustomerDaoMixin {
   }
 
   Future<void> updateCustomer(int? customerId, double finalAmount) {
-    /*CustomerTableCompanion entry = CustomerTableCompanion(
-        name: Value(customer.name),
-        phoneNumber: Value(customer.phoneNumber),
-        finalAmount: Value(customer.finalAmount));*/
     return (update(customerTable)..where((tbl) => tbl.id.equals(customerId!))).write(CustomerTableCompanion(
       finalAmount: Value(finalAmount)
     ));
+  }
+
+  Future<int> deleteCustomer(int? customerId) async {
+    final result = (delete(customerTable)..where((tbl) => tbl.id.equals(customerId!))).go();
+    print("Delete user result $result");
+    return result;
   }
 
   //insert customer amount
@@ -72,14 +74,10 @@ class CustomerDao extends DatabaseAccessor<MyDatabase> with _$CustomerDaoMixin {
 
   //get All customer's
   Future<List<Customer>> getAllCustomer() async {
-    print("DriftDatabase getAllCustomer");
     Future<List<CustomerTableData>> customerTableDatas =
         select(customerTable).get();
-    print("DriftDatabase customerTableDatas $customerTableDatas");
     List<CustomerTableData> datas = await customerTableDatas;
-    print("DriftDatabase datas $datas");
     List<Customer> customers = List.generate(datas.length, (index) {
-      print("DriftDatabase inside index $index data ${datas[index]}");
       Map<String, dynamic> customerMap = {
         'id': datas[index].id,
         'name': datas[index].name,
@@ -88,19 +86,14 @@ class CustomerDao extends DatabaseAccessor<MyDatabase> with _$CustomerDaoMixin {
       };
       return Customer.fromMap(customerMap);
     });
-    print("DriftDatabase $customers");
     return customers;
   }
 
   //get customer amount history
   Future<List<CustomerAmount>> getCustomerAmountHistory(int? customerId) async {
-    print("DriftDatabase getAllCustomer");
     Future<List<CustomerAmountTableData>> customerAmountTableDatas = (select(customerAmountTable)..where((tbl) => tbl.customerId.equals(customerId!))).get();
-    print("DriftDatabase customerTableDatas $customerAmountTableDatas");
     List<CustomerAmountTableData> datas = await customerAmountTableDatas;
-    print("DriftDatabase datas $datas");
     List<CustomerAmount> customerAmountHistories = List.generate(datas.length, (index) {
-      print("DriftDatabase inside index $index data ${datas[index]}");
       Map<String, dynamic> customerAmountMap = {
         'id': datas[index].id,
         'customerId': datas[index].customerId,
@@ -112,7 +105,6 @@ class CustomerDao extends DatabaseAccessor<MyDatabase> with _$CustomerDaoMixin {
       };
       return CustomerAmount.fromMap(customerAmountMap);
     });
-    print("DriftDatabase $customerAmountHistories");
     return customerAmountHistories;
   }
 }

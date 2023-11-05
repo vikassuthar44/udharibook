@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:udhari_book/customer/customer_screen.dart';
 import 'package:udhari_book/home/mock_data.dart';
 import 'package:udhari_book/util/Util.dart';
+import 'package:udhari_book/util/theme.dart';
 
 import '../database/drift_database/DatabaseDriftHelper.dart';
 
@@ -81,7 +83,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _dialogBuilder(BuildContext context) {
+  Future<void> _dialogBuilder(BuildContext context, Size size) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -96,6 +98,7 @@ class _HomePageState extends State<HomePage> {
                 height: 10,
               ),
               TextField(
+                maxLength: 25,
                 controller: customerName,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
@@ -110,6 +113,7 @@ class _HomePageState extends State<HomePage> {
                 height: 10,
               ),
               TextField(
+                maxLength: 11,
                 controller: customerPhoneNumber,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
@@ -122,13 +126,22 @@ class _HomePageState extends State<HomePage> {
               ),
               Center(
                 child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: size.width*0.1),
                     decoration: const BoxDecoration(
                         color: Colors.orange,
                         borderRadius: BorderRadius.all(Radius.circular(10))),
                     child: TextButton(
                         onPressed: () {
-                          _addCustomer();
-                          Navigator.pop(context);
+                          if (customerName.value.text.isNotEmpty &&
+                              customerPhoneNumber.value.text.isNotEmpty) {
+                            _addCustomer();
+                            Navigator.pop(context);
+                          } else {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text("Please Fill Details..."),
+                            ));
+                          }
                         },
                         child: const Text("Add Customer"))),
               )
@@ -143,13 +156,20 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: const DrawerButton(),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: AppTheme.lightTheme.primaryColor,
         title: Text(widget.title,
-            style: const TextStyle(fontWeight: FontWeight.w700)),
+            style: const TextStyle(
+                fontWeight: FontWeight.w700, color: Colors.white)),
         actions: [
-          TextButton(onPressed: () {}, child: const Icon(Icons.picture_as_pdf))
+          TextButton(
+              onPressed: () {},
+              child: const Icon(
+                Icons.picture_as_pdf,
+                color: Colors.white,
+              ))
         ],
       ),
       body: Column(
@@ -171,13 +191,14 @@ class _HomePageState extends State<HomePage> {
             Container(
               height: screenSize.height * 0.05,
               decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.inversePrimary,
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(10),
                       bottomRight: Radius.circular(10))),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenSize.width * 0.05, vertical: 10),
               child: Container(
                 decoration: BoxDecoration(
                     color: Colors.grey.shade300,
@@ -238,94 +259,136 @@ class _HomePageState extends State<HomePage> {
                 future: customers,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasData) {
+                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       final customers = snapshot.data!;
                       return ListView.builder(
                           scrollDirection: Axis.vertical,
                           shrinkWrap: true,
                           itemCount: customers.length,
                           itemBuilder: (context, index) {
-                            return Column(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => CustomerScreen(
-                                              customer: customers[index])),
-                                    ).then(onGoBack);
-                                  },
-                                  child: Container(
-                                    color: Colors.grey.shade100,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                          right: screenSize.width * 0.05),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: ListTile(
-                                              title: Text(customers[index].name),
-                                              subtitle: Text(
-                                                  customers[index].phoneNumber),
+                            return Container(
+                              color: Colors.grey.shade100,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: screenSize.width * 0.05),
+                              child: Column(
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                CustomerScreen(
+                                                    customer:
+                                                        customers[index])),
+                                      ).then(onGoBack);
+                                    },
+                                    child: Container(
+                                      color: Colors.grey.shade100,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(
+                                            right: screenSize.width * 0.0),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: ListTile(
+                                                title:
+                                                    Text(customers[index].name),
+                                                subtitle: Text(customers[index]
+                                                    .phoneNumber),
+                                              ),
                                             ),
-                                          ),
-                                          customers[index].finalAmount > 0
-                                              ? Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      "₹ ${customers[index].finalAmount}",
-                                                      style: const TextStyle(
-                                                          color: Colors.green),
-                                                    ),
-                                                    const Text(
-                                                      "You Will Get",
-                                                      style: TextStyle(
-                                                          color: Colors.green),
-                                                    ),
-                                                  ],
-                                                )
-                                              : Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      "₹ ${customers[index].finalAmount}",
-                                                      style: const TextStyle(
-                                                          color: Colors.red),
-                                                    ),
-                                                    const Text(
-                                                      "You Will Give",
-                                                      style: TextStyle(
-                                                          color: Colors.green),
-                                                    ),
-                                                  ],
-                                                )
-                                        ],
+                                            customers[index].finalAmount > 0
+                                                ? Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text(
+                                                        "₹ ${customers[index].finalAmount}",
+                                                        style: const TextStyle(
+                                                            color:
+                                                                Colors.green),
+                                                      ),
+                                                      const Text(
+                                                        "You Will Get",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.green),
+                                                      ),
+                                                    ],
+                                                  )
+                                                : customers[index]
+                                                            .finalAmount ==
+                                                        0.0
+                                                    ? const Text(
+                                                        "₹ 0.0",
+                                                        style: TextStyle(
+                                                            color: Colors.red),
+                                                      )
+                                                    : Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Text(
+                                                            "₹ ${customers[index].finalAmount}",
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .red),
+                                                          ),
+                                                          const Text(
+                                                            "You Will Give",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .green),
+                                                          ),
+                                                        ],
+                                                      )
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const Divider()
-                              ],
+                                  const Divider()
+                                ],
+                              ),
                             );
                           });
                     } else {
                       print("Database no customer found");
-                      return const Center(
-                        child: Text("No customer available."),
+                      return Stack(
+                        children: [
+                          Center(
+                            child: Column(
+                              children: [
+                                SizedBox(height: screenSize.height * .2),
+                                SvgPicture.asset(
+                                  'assets/not_found.svg',
+                                  semanticsLabel: "Not Found",
+                                  height: screenSize.height * .2,
+                                  width: screenSize.width * .2,
+                                ),
+                                const Text("No customer available."),
+                              ],
+                            ),
+                          ),
+                        ],
                       );
                     }
                   } else {
                     print("Database loading");
-                    return const Center(
-                      child: CircularProgressIndicator(),
+                    return const Stack(
+                      children: [
+                        Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ],
                     );
                   }
                 }),
@@ -335,13 +398,13 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 20, right: 20),
         child: SizedBox(
-          width: 150,
+          width: 170,
           child: FloatingActionButton(
             isExtended: true,
             onPressed: () {
               customerName.clear();
               customerPhoneNumber.clear();
-              _dialogBuilder(context);
+              _dialogBuilder(context, screenSize);
             },
             tooltip: 'Add Customer',
             child: const Row(
