@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "207083996980",
+    "firebase_url": "https://chinese-app-5401b.firebaseio.com",
+    "project_id": "chinese-app-5401b",
+    "storage_bucket": "chinese-app-5401b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:207083996980:android:e25633c6cf2bbaa1900761",
+        "android_client_info": {
+          "package_name": "com.example.easy_khata"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "207083996980-k8aksdduvsbjhtgurk0433inqggl109a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.easy_khata",
+            "certificate_hash": "0228e9af14e7126b340df4c68b0a4b3729765e9c"
+          }
+        },
+        {
+          "client_id": "207083996980-lr7ku16of2oh0m4o4hovn9agi1coqcjq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAhkrVCn458wMAfw4n8LqxJStMF3VQ_9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "207083996980-lr7ku16of2oh0m4o4hovn9agi1coqcjq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "207083996980-c5hfot983snt6ut4ust9bio2s4qi44rp.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.udhariBook.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,24 +1,26 @@
 import 'dart:async';
 
+import 'package:easy_khata/util/myshared_preference.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:udhari_book/customer/customer_screen.dart';
-import 'package:udhari_book/home/mock_data.dart';
-import 'package:udhari_book/util/Util.dart';
-import 'package:udhari_book/util/theme.dart';
+import 'package:easy_khata/customer/customer_screen.dart';
+import 'package:easy_khata/home/mock_data.dart';
+import 'package:easy_khata/util/Util.dart';
+import 'package:easy_khata/util/theme/theme_provider.dart';
 
 import '../database/drift_database/DatabaseDriftHelper.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   //late List<Customer> customerDatas;
   final customerName = TextEditingController();
   final customerPhoneNumber = TextEditingController();
@@ -126,7 +128,7 @@ class _HomePageState extends State<HomePage> {
               ),
               Center(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: size.width*0.1),
+                    padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
                     decoration: const BoxDecoration(
                         color: Colors.orange,
                         borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -152,14 +154,122 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget drawerItem(String title, IconData leadingIcon, IconData trailingIcon,
+      bool isSwitch) {
+    return Builder(builder: (context) {
+      return Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.of(context).size.width * 0.03,
+            vertical: MediaQuery.of(context).size.width * 0.02),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  child: CircleAvatar(
+                    minRadius: 18,
+                    child: Icon(leadingIcon),
+                  ),
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.02,
+                ),
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w500),
+                )
+              ],
+            ),
+            isSwitch == false
+                ? const Icon(Icons.arrow_forward_ios)
+                : Switch(
+                    value: ref.watch(themeProvider) == ThemeMode.dark,
+                    onChanged: (value) {
+                      ref.read(themeProvider.notifier).changeTheme(value);
+                    })
+          ],
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeState = ref.watch(themeProvider);
     final screenSize = MediaQuery.of(context).size;
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: Text(
+                MySharedPreference.getUserName() ?? "",
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18),
+              ),
+              accountEmail: Text(MySharedPreference.getPhoneNumber() ?? "",
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary)),
+              decoration: const BoxDecoration(color: Colors.transparent),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor:
+                    Theme.of(context).platform == TargetPlatform.iOS
+                        ? Colors.blue
+                        : Colors.white,
+                child: Text(
+                  MySharedPreference.getUserName()?.substring(0, 1) ?? "A",
+                  style: const TextStyle(fontSize: 40.0, color: Colors.red),
+                ),
+              ),
+            ),
+            InkWell(
+                onTap: () {},
+                child: drawerItem("My account", Icons.account_circle,
+                    Icons.arrow_forward_ios, false)),
+            InkWell(
+                onTap: () {},
+                child: drawerItem(
+                    "Settings", Icons.settings, Icons.arrow_forward_ios, false)
+                ),
+            InkWell(
+              onTap: () {},
+              child: drawerItem(
+                  themeState == ThemeMode.dark
+                      ? "Light Theme"
+                      : "Dark Theme", themeState == ThemeMode.dark
+                  ? Icons.dark_mode
+                  : Icons.light_mode, Icons.arrow_forward_ios, true)
+            ),
+            InkWell(
+              onTap: () {},
+              child: drawerItem("Help", Icons.help, Icons.arrow_forward_ios, false)
+            ),
+            InkWell(
+              onTap: () {},
+              child: drawerItem("About Us", Icons.info, Icons.arrow_forward_ios, false)
+              /*const ListTile(
+                leading: Icon(Icons.info),
+                title: Text("About Us"),
+                trailing: Icon(Icons.arrow_forward_ios_sharp),
+              ),*/
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
-        leading: const DrawerButton(),
-        backgroundColor: AppTheme.lightTheme.primaryColor,
+        //leading: const DrawerButton(),
+        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: theme.colorScheme.primary,
         title: Text(widget.title,
             style: const TextStyle(
                 fontWeight: FontWeight.w700, color: Colors.white)),
@@ -192,18 +302,18 @@ class _HomePageState extends State<HomePage> {
               height: screenSize.height * 0.05,
               decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
-                  borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10))),
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(screenSize.width * 0.04),
+                      bottomRight: Radius.circular(screenSize.width * 0.04))),
             ),
             Padding(
               padding: EdgeInsets.symmetric(
                   horizontal: screenSize.width * 0.05, vertical: 10),
               child: Container(
                 decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius:
-                        const BorderRadius.all(Radius.circular(10.0))),
+                    color: theme.colorScheme.secondary,
+                    borderRadius: BorderRadius.all(
+                        Radius.circular(screenSize.width * 0.04))),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -240,7 +350,7 @@ class _HomePageState extends State<HomePage> {
           ]),
           //const Divider(),
           Container(
-            color: Colors.grey.shade300,
+            color: theme.colorScheme.secondary.withAlpha(50),
             padding: EdgeInsets.symmetric(
                 horizontal: screenSize.width * 0.05, vertical: 10),
             child: const Row(
@@ -267,7 +377,7 @@ class _HomePageState extends State<HomePage> {
                           itemCount: customers.length,
                           itemBuilder: (context, index) {
                             return Container(
-                              color: Colors.grey.shade100,
+                              color: theme.colorScheme.secondary.withAlpha(25),
                               padding: EdgeInsets.symmetric(
                                   horizontal: screenSize.width * 0.05),
                               child: Column(
@@ -283,75 +393,68 @@ class _HomePageState extends State<HomePage> {
                                                         customers[index])),
                                       ).then(onGoBack);
                                     },
-                                    child: Container(
-                                      color: Colors.grey.shade100,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(
-                                            right: screenSize.width * 0.0),
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: ListTile(
-                                                title:
-                                                    Text(customers[index].name),
-                                                subtitle: Text(customers[index]
-                                                    .phoneNumber),
-                                              ),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                          right: screenSize.width * 0.0),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: ListTile(
+                                              title:
+                                                  Text(customers[index].name),
+                                              subtitle: Text(
+                                                  customers[index].phoneNumber),
                                             ),
-                                            customers[index].finalAmount > 0
-                                                ? Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Text(
-                                                        "₹ ${customers[index].finalAmount}",
-                                                        style: const TextStyle(
-                                                            color:
-                                                                Colors.green),
-                                                      ),
-                                                      const Text(
-                                                        "You Will Get",
-                                                        style: TextStyle(
-                                                            color:
-                                                                Colors.green),
-                                                      ),
-                                                    ],
-                                                  )
-                                                : customers[index]
-                                                            .finalAmount ==
-                                                        0.0
-                                                    ? const Text(
-                                                        "₹ 0.0",
-                                                        style: TextStyle(
-                                                            color: Colors.red),
-                                                      )
-                                                    : Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Text(
-                                                            "₹ ${customers[index].finalAmount}",
-                                                            style:
-                                                                const TextStyle(
-                                                                    color: Colors
-                                                                        .red),
-                                                          ),
-                                                          const Text(
-                                                            "You Will Give",
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .green),
-                                                          ),
-                                                        ],
-                                                      )
-                                          ],
-                                        ),
+                                          ),
+                                          customers[index].finalAmount > 0
+                                              ? Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "₹ ${customers[index].finalAmount}",
+                                                      style: const TextStyle(
+                                                          color: Colors.green),
+                                                    ),
+                                                    const Text(
+                                                      "You Will Get",
+                                                      style: TextStyle(
+                                                          color: Colors.green),
+                                                    ),
+                                                  ],
+                                                )
+                                              : customers[index].finalAmount ==
+                                                      0.0
+                                                  ? const Text(
+                                                      "₹ 0.0",
+                                                      style: TextStyle(
+                                                          color: Colors.red),
+                                                    )
+                                                  : Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Text(
+                                                          "₹ ${customers[index].finalAmount}",
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .red),
+                                                        ),
+                                                        const Text(
+                                                          "You Will Give",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.green),
+                                                        ),
+                                                      ],
+                                                    )
+                                        ],
                                       ),
                                     ),
                                   ),
