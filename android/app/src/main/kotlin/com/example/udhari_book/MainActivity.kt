@@ -1,4 +1,4 @@
-package com.example.udhari_book
+package com.example.easy_khata
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,27 +1,28 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:udhari_book/database/drift_database/DatabaseDriftHelper.dart';
-import 'package:udhari_book/util/Util.dart';
-import 'package:udhari_book/util/pdf_api.dart';
-import 'package:udhari_book/util/theme.dart';
+import 'package:easy_khata/database/drift_database/DatabaseDriftHelper.dart';
+import 'package:easy_khata/util/Util.dart';
+import 'package:easy_khata/util/pdf_api.dart';
+import 'package:easy_khata/util/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../donwload_report/PdfScreen.dart';
 import '../home/mock_data.dart';
 
 @immutable
-class CustomerScreen extends StatefulWidget {
+class CustomerScreen extends ConsumerStatefulWidget {
   CustomerScreen({super.key, required this.customer});
 
   late Customer customer;
 
   @override
-  State<CustomerScreen> createState() => _CustomerScreenState();
+  ConsumerState<CustomerScreen> createState() => _CustomerScreenState();
 }
 
-class _CustomerScreenState extends State<CustomerScreen> {
+class _CustomerScreenState extends ConsumerState<CustomerScreen> {
   final customerAmount = TextEditingController();
   final customerDescription = TextEditingController();
   String customerDate = Util.dateSelection(DateTime.now());
@@ -191,7 +192,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
                         decoration: const BoxDecoration(
-                            color: Colors.orange,
+                            color: Colors.blueGrey,
                             borderRadius: BorderRadius.all(Radius.circular(10))),
                         child: TextButton(
                             onPressed: () {
@@ -275,11 +276,13 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: AppTheme.lightTheme.primaryColor,
+      backgroundColor: theme.colorScheme.primary,
       appBar: AppBar(
-        backgroundColor: AppTheme.lightTheme.primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor:theme.colorScheme.primary,
         title: const Text("Customer Details",
             style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
         actions: [
@@ -309,15 +312,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
             onSelected: (value)  {
               if(value == 1) {
                 setState(() {
-                  final result = DatabaseDriftHelper.customerDao?.deleteCustomer(widget.customer.id);
-                  if(result == 1) {
-                    print("Delete user result inside $result");
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Customer deleted successfully")));
-                    Navigator.pop(context);
-                  } else {
-                    print("Delete user result inside else  $result");
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Something Went Wrong!")));
-                  }
+                  DatabaseDriftHelper.customerDao?.deleteCustomer(widget.customer.id);
+                  Navigator.pop(context);
                 });
               }
             },
@@ -326,10 +322,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
       ),
       body: Container(
         height: size.height,
-        decoration: const BoxDecoration(
-            color: Colors.white,
+        decoration: BoxDecoration(
+            color: theme.colorScheme.background,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+                topLeft: Radius.circular(size.width*0.04), topRight: Radius.circular(size.width*0.04))),
         child: Stack(
           children: [
             Positioned(
@@ -537,7 +533,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   Column(
                     children: [
                       Container(
-                        color: Colors.grey.shade300,
+                        color: theme.colorScheme.secondary.withAlpha(50),
                         padding: EdgeInsets.symmetric(
                             horizontal: size.width * 0.05, vertical: 10),
                         child: const Row(
@@ -569,7 +565,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           ],
                         ),
                       ),
-                      customerAmountHistory(),
+                      customerAmountHistory(context),
                     ],
                   ),
                 ],
@@ -642,7 +638,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  Widget customerAmountHistory() {
+  Widget customerAmountHistory(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return FutureBuilder(
         future: amountHistory,
@@ -658,7 +654,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   itemBuilder: (BuildContext context, int index) {
                     bool isCredit = amountHistory[index].isCredit;
                     return Container(
-                      color: Colors.grey.shade100,
+                      color: Theme.of(context).colorScheme.secondary.withAlpha(25),
                       padding: EdgeInsets.symmetric(
                           horizontal: size.width * 0.05,
                           vertical: size.height * 0.01),

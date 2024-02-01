@@ -1,2 +1,2 @@
-# udharibook
-UdhariBook 
+# easykhata
+EasyKhata 

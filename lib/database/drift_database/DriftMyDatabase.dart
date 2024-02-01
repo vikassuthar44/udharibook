@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:udhari_book/database/drift_database/customer.dart';
-import 'package:udhari_book/home/mock_data.dart';
+import 'package:easy_khata/database/drift_database/customer.dart';
+import 'package:easy_khata/home/mock_data.dart';
 
 import 'customer_amount.dart';
 
@@ -29,7 +29,7 @@ class MyDatabase extends _$MyDatabase {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'udharibook.db'));
+    final file = File(p.join(dbFolder.path, 'easykhata.db'));
     return NativeDatabase(file);
   });
 }
