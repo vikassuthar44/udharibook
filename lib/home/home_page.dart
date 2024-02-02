@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_khata/firebase/firebase_service.dart';
+import 'package:easy_khata/profile/own_profile.dart';
+import 'package:easy_khata/util/common_widget/custom_button.dart';
 import 'package:easy_khata/util/myshared_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +12,7 @@ import 'package:easy_khata/customer/customer_screen.dart';
 import 'package:easy_khata/home/mock_data.dart';
 import 'package:easy_khata/util/Util.dart';
 import 'package:easy_khata/util/theme/theme_provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../database/drift_database/DatabaseDriftHelper.dart';
 
@@ -21,7 +26,6 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  //late List<Customer> customerDatas;
   final customerName = TextEditingController();
   final customerPhoneNumber = TextEditingController();
 
@@ -34,16 +38,16 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     //customerDatas = [];//CustomerMockData.getCustomerMockData();
     print("Customer Datas");
-    getCustomers();
+    //getCustomers();
     //print(customerDatas);
     super.initState();
   }
 
   FutureOr onGoBack(dynamic value) {
     //refreshData();
-    setState(() {
+    /*setState(() {
       getCustomers();
-    });
+    });*/
   }
 
   void getCustomers() async {
@@ -86,6 +90,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _dialogBuilder(BuildContext context, Size size) {
+    bool isSubmitButtonLoading = false;
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -127,25 +132,25 @@ class _HomePageState extends ConsumerState<HomePage> {
                 height: 20,
               ),
               Center(
-                child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
-                    decoration: const BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                    child: TextButton(
-                        onPressed: () {
-                          if (customerName.value.text.isNotEmpty &&
-                              customerPhoneNumber.value.text.isNotEmpty) {
-                            _addCustomer();
-                            Navigator.pop(context);
-                          } else {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(const SnackBar(
-                              content: Text("Please Fill Details..."),
-                            ));
-                          }
-                        },
-                        child: const Text("Add Customer"))),
+                child: CustomButton(
+                  isLoading: isSubmitButtonLoading,
+                  buttonLabel: "Add Customer",
+                  isButtonEnable: true,
+                  onTap: () {
+                    if (customerName.value.text.isNotEmpty &&
+                        customerPhoneNumber.value.text.isNotEmpty) {
+                      setState(() {
+                        isSubmitButtonLoading = true;
+                      });
+                      FirebaseService.addCustomer(customerName.value.text,
+                              customerPhoneNumber.value.text)
+                          ?.then((value) => Navigator.pop(context));
+                      //Navigator.pop(context);
+                    } else {
+                      Fluttertoast.showToast(msg: "Please Fill Details...");
+                    }
+                  },
+                ),
               )
             ],
           ),
@@ -227,7 +232,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ? Colors.blue
                         : Colors.white,
                 child: Text(
-                  MySharedPreference.getUserName()?.substring(0, 1) ?? "A",
+                  MySharedPreference.getUserName() == ""
+                      ? "A"
+                      : MySharedPreference.getUserName()?.substring(0, 1) ??
+                          "A",
                   style: const TextStyle(fontSize: 40.0, color: Colors.red),
                 ),
               ),
@@ -238,31 +246,31 @@ class _HomePageState extends ConsumerState<HomePage> {
                     Icons.arrow_forward_ios, false)),
             InkWell(
                 onTap: () {},
+                child: drawerItem("Settings", Icons.settings,
+                    Icons.arrow_forward_ios, false)),
+            InkWell(
+                onTap: () {},
                 child: drawerItem(
-                    "Settings", Icons.settings, Icons.arrow_forward_ios, false)
-                ),
+                    themeState == ThemeMode.dark ? "Light Theme" : "Dark Theme",
+                    themeState == ThemeMode.dark
+                        ? Icons.dark_mode
+                        : Icons.light_mode,
+                    Icons.arrow_forward_ios,
+                    true)),
             InkWell(
-              onTap: () {},
-              child: drawerItem(
-                  themeState == ThemeMode.dark
-                      ? "Light Theme"
-                      : "Dark Theme", themeState == ThemeMode.dark
-                  ? Icons.dark_mode
-                  : Icons.light_mode, Icons.arrow_forward_ios, true)
-            ),
+                onTap: () {},
+                child: drawerItem(
+                    "Help", Icons.help, Icons.arrow_forward_ios, false)),
             InkWell(
-              onTap: () {},
-              child: drawerItem("Help", Icons.help, Icons.arrow_forward_ios, false)
-            ),
-            InkWell(
-              onTap: () {},
-              child: drawerItem("About Us", Icons.info, Icons.arrow_forward_ios, false)
-              /*const ListTile(
+                onTap: () {},
+                child: drawerItem(
+                    "About Us", Icons.info, Icons.arrow_forward_ios, false)
+                /*const ListTile(
                 leading: Icon(Icons.info),
                 title: Text("About Us"),
                 trailing: Icon(Icons.arrow_forward_ios_sharp),
               ),*/
-            ),
+                ),
           ],
         ),
       ),
@@ -285,18 +293,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          /*Container(
-                color: Colors.grey.shade500,
-                padding: const EdgeInsets.all(20),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text("Customer's",
-                        style:
-                            TextStyle(fontSize: 18, fontWeight: FontWeight.w600))
-                  ],
-                ),
-              ),*/
           Stack(children: [
             Container(
               height: screenSize.height * 0.05,
@@ -323,7 +319,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         const Text("You Will Get",
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w600)),
-                        Text("₹ $finalAmountGet",
+                        Text("₹ ${MySharedPreference.getTotalAmountGet()}",
                             style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -336,7 +332,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         const Text("You Will Give",
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w600)),
-                        Text("₹ $finalAmountGive",
+                        Text("₹ ${MySharedPreference.getTotalAmountGive()}",
                             style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -365,8 +361,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<Customer>>(
-                future: customers,
+            child: FutureBuilder<List<OtherUser>?>(
+                future: FirebaseService.getOwnProfileDetails(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasData && snapshot.data!.isNotEmpty) {
@@ -389,7 +385,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         MaterialPageRoute(
                                             builder: (context) =>
                                                 CustomerScreen(
-                                                    customer:
+                                                    otherUser:
                                                         customers[index])),
                                       ).then(onGoBack);
                                     },
@@ -410,13 +406,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                   customers[index].phoneNumber),
                                             ),
                                           ),
-                                          customers[index].finalAmount > 0
+                                          customers[index].totalAmountGet > 0
                                               ? Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.center,
                                                   children: [
                                                     Text(
-                                                      "₹ ${customers[index].finalAmount}",
+                                                      "₹ ${customers[index].totalAmountGet}",
                                                       style: const TextStyle(
                                                           color: Colors.green),
                                                     ),
@@ -427,7 +423,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                     ),
                                                   ],
                                                 )
-                                              : customers[index].finalAmount ==
+                                              : customers[index]
+                                                          .totalAmountGet ==
                                                       0.0
                                                   ? const Text(
                                                       "₹ 0.0",
@@ -440,7 +437,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                               .center,
                                                       children: [
                                                         Text(
-                                                          "₹ ${customers[index].finalAmount}",
+                                                          "₹ ${customers[index].totalAmountGet}",
                                                           style:
                                                               const TextStyle(
                                                                   color: Colors

@@ -1,3 +1,4 @@
+import 'package:easy_khata/profile/own_profile.dart';
 import 'package:flutter/material.dart';
 
 import '../home/mock_data.dart';
@@ -11,6 +12,19 @@ class Util {
         finalAmount -= customerAmount[i].amount;
       } else {
         finalAmount += customerAmount[i].amount;
+      }
+    }
+    return finalAmount;
+  }
+
+  static double finalAmountHistoryCalculateNew(
+      List<AmountHistory> history) {
+    double finalAmount = 0.0;
+    for (int i = 0; i < history.length; i++) {
+      if (history[i].isCredit) {
+        finalAmount -= history[i].amount;
+      } else {
+        finalAmount += history[i].amount;
       }
     }
     return finalAmount;

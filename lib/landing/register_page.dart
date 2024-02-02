@@ -100,11 +100,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       SizedBox(
                         height: screenSize.height * .02,
                       ),
-                      InputTextField(
+                      /*InputTextField(
                           prefix: Icons.business,
                           hintText: 'enter business or your name here...',
                           isMobileNumber: false,
                           isPassword: false,
+                          maxLength: 10,
                           keyboardType: TextInputType.emailAddress,
                           textEditingController: emailTextController
                       ).animate().fadeIn(duration: 0.2.seconds, delay: 0.5.seconds).slideY(),
@@ -113,6 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           hintText: 'enter email id here...',
                           isMobileNumber: false,
                           isPassword: false,
+                          maxLength: 10,
                           keyboardType: TextInputType.emailAddress,
                           textEditingController: emailTextController
                       ).animate().fadeIn(duration: 0.2.seconds, delay: 0.6.seconds).slideY(),
@@ -121,6 +123,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           hintText: 'enter password here...',
                           isMobileNumber: false,
                           isPassword: true,
+                          maxLength: 10,
                           keyboardType: TextInputType.emailAddress,
                           textEditingController: emailTextController
                       ).animate().fadeIn(duration: 0.2.seconds, delay: 0.7.seconds).slideY(),
@@ -129,9 +132,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           hintText: 'your mobile here...',
                           isMobileNumber: true,
                           isPassword: false,
+                          maxLength: 10,
                           keyboardType: TextInputType.emailAddress,
                           textEditingController: emailTextController
-                      ).animate().fadeIn(duration: 0.2.seconds, delay: 0.7.seconds).slideY(),
+                      ).animate().fadeIn(duration: 0.2.seconds, delay: 0.7.seconds).slideY(),*/
                       SizedBox(
                         height: screenSize.height * .01,
                       ),
