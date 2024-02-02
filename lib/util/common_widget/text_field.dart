@@ -8,12 +8,15 @@ class InputTextField extends StatefulWidget {
       required this.isMobileNumber,
       required this.isPassword,
       required this.keyboardType,
-      required this.textEditingController});
+      required this.textEditingController,
+      required this.maxLength, required this.errorMsg});
 
   final IconData prefix;
   final String hintText;
   final bool isMobileNumber;
   final bool isPassword;
+  final int maxLength;
+  final String errorMsg;
   final TextInputType keyboardType;
   final TextEditingController textEditingController;
 
@@ -29,9 +32,6 @@ class _InputTextFieldState extends State<InputTextField> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey, width: 2)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -45,9 +45,10 @@ class _InputTextFieldState extends State<InputTextField> {
             child: TextField(
               controller: widget.textEditingController,
               keyboardType: widget.keyboardType,
+              maxLength: widget.maxLength,
               obscureText: widget.isPassword && !isPasswordVisible,
               decoration: InputDecoration(
-                border: InputBorder.none,
+                border: const OutlineInputBorder(),
                 hintText: widget.hintText,
               ),
             ),

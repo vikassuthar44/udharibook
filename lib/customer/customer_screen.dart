@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:easy_khata/firebase/firebase_service.dart';
+import 'package:easy_khata/profile/own_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -14,9 +16,9 @@ import '../home/mock_data.dart';
 
 @immutable
 class CustomerScreen extends ConsumerStatefulWidget {
-  CustomerScreen({super.key, required this.customer});
+  CustomerScreen({super.key, required this.otherUser});
 
-  late Customer customer;
+  late OtherUser otherUser;
 
   @override
   ConsumerState<CustomerScreen> createState() => _CustomerScreenState();
@@ -31,10 +33,10 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
   String customerTime = Util.timeSelection(
       TimeOfDay.now()); //"${DateTime.now().hour}:${DateTime.now().minute}";
 
-  late Future<List<CustomerAmount>> amountHistory;
+  //late Future<List<CustomerAmount>> amountHistory;
   double finalAmount = 0.0;
 
-  void _addAmountEntry(bool isCredit) async {
+  /*void _addAmountEntry(bool isCredit) async {
     setState(() {
       DatabaseDriftHelper.customerDao?.addCustomerAmount(CustomerAmount(
           customerId: widget.customer.id,
@@ -48,9 +50,9 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       finalAmountCalculate(amountHistory);
     });
     //widget.customer.customerAmount.reversed;
-  }
+  }*/
 
-  Future<void> _selectDate(BuildContext context, setState) async {
+  /*Future<void> _selectDate(BuildContext context, setState) async {
     DateTime selectedDate = DateTime.now();
     final DateTime? picked = await showDatePicker(
         context: context,
@@ -63,9 +65,9 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
         print("selected date $customerDate");
       });
     }
-  }
+  }*/
 
-  Future<void> _selectTime(BuildContext context, setState) async {
+  /*Future<void> _selectTime(BuildContext context, setState) async {
     TimeOfDay selectedTime = TimeOfDay.now();
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
@@ -78,17 +80,18 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
         print("selected time $customerTime");
       });
     }
-  }
+  }*/
 
-  void updateCustomer() async {
+  /*void updateCustomer() async {
     final sds = await amountHistory;
     setState(() {
       DatabaseDriftHelper.customerDao?.updateCustomer(
           widget.customer.id, Util.finalAmountHistoryCalculate(sds));
     });
-  }
+  }*/
 
-  Future<void> _addAmountEntryDialog(BuildContext context, bool isCredit, Size size) {
+  Future<void> _addAmountEntryDialog(
+      BuildContext context, bool isCredit, Size size) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -141,7 +144,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                       InkWell(
                         onTap: () {
                           setState(() {
-                            _selectDate(context, setState);
+                            //_selectDate(context, setState);
                           });
                         },
                         child: Container(
@@ -164,7 +167,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                       InkWell(
                         onTap: () {
                           setState(() {
-                            _selectTime(context, setState);
+                            //_selectTime(context, setState);
                           });
                         },
                         child: Container(
@@ -190,13 +193,21 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                   ),
                   Center(
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: size.width * 0.1),
                         decoration: const BoxDecoration(
                             color: Colors.blueGrey,
-                            borderRadius: BorderRadius.all(Radius.circular(10))),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
                         child: TextButton(
                             onPressed: () {
-                              _addAmountEntry(isCredit);
+                              //_addAmountEntry(isCredit);
+                              FirebaseService.addAmountHistory(
+                                  widget.otherUser.userId,
+                                  customerAmount.text,
+                                  customerDescription.text,
+                                  isCredit,
+                                  "qwdqwfdqwe");
                               Navigator.pop(context);
                             },
                             child: const Text("Save"))),
@@ -212,21 +223,29 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
 
   @override
   void initState() {
-    amountHistory = getAmountHistory();
-    finalAmountCalculate(amountHistory);
+    //amountHistory = getAmountHistory();
+    finalAmountCalculate(widget.otherUser.amountHistory);
     super.initState();
   }
 
-  Future<List<CustomerAmount>> getAmountHistory() async {
+  /*Future<List<CustomerAmount>> getAmountHistory() async {
     return DatabaseDriftHelper.customerDao!.getCustomerAmountHistory(widget
-        .customer
+        .otherUser
         .id); //DBHelper().getCustomerAmountHistory(widget.customer.id);
-  }
+  }*/
 
-  void finalAmountCalculate(Future<List<CustomerAmount>> customerAmount) async {
+  /*void finalAmountCalculate(Future<List<CustomerAmount>> customerAmount) async {
     List<CustomerAmount> dsww = await customerAmount;
     setState(() {
       finalAmount = Util.finalAmountHistoryCalculate(dsww);
+    });
+  }*/
+
+  void finalAmountCalculate(List<AmountHistory>? amountHistory) async {
+    setState(() {
+      if (amountHistory != null) {
+        finalAmount = Util.finalAmountHistoryCalculateNew(amountHistory);
+      }
     });
   }
 
@@ -235,13 +254,15 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       //FOR Android
       String message =
           "Dear Sir/Madam, Your Payment of ₹ $finalAmount is pending at Vikas Suthar (+91 8239379028). Click here to view the details";
-      final url = Uri.parse('sms:${widget.customer.phoneNumber}?body=$message');
+      final url =
+          Uri.parse('sms:${widget.otherUser.phoneNumber}?body=$message');
       await launchUrl(url);
     } else if (Platform.isIOS) {
       //FOR IOS
       String message =
           "Dear Sir/Madam, Your Payment of ₹ $finalAmount is pending at Vikas Suthar (+91 8239379028). Click here to view the details";
-      final url = Uri.parse('sms:${widget.customer.phoneNumber}?body=$message');
+      final url =
+          Uri.parse('sms:${widget.otherUser.phoneNumber}?body=$message');
       await launchUrl(url);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -252,7 +273,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
 
   void normalCall() async {
     try {
-      launchUrl(Uri.parse("tel://${widget.customer.phoneNumber}"));
+      launchUrl(Uri.parse("tel://${widget.otherUser.phoneNumber}"));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("There are no app available to call"),
@@ -263,7 +284,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
   void sendWhatsappMessage() async {
     String message =
         "Dear Sir/Madam, Your Payment of ₹ $finalAmount is pending at Vikas Suthar (+91 8239379028). Click here to view the details";
-    var whatsappUrl = "whatsapp://send?phone=${widget.customer.phoneNumber}" +
+    var whatsappUrl = "whatsapp://send?phone=${widget.otherUser.phoneNumber}" +
         "&text=$message";
     try {
       launchUrl(Uri.parse(whatsappUrl));
@@ -282,7 +303,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       backgroundColor: theme.colorScheme.primary,
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor:theme.colorScheme.primary,
+        backgroundColor: theme.colorScheme.primary,
         title: const Text("Customer Details",
             style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
         actions: [
@@ -309,13 +330,14 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                 ),
               ),
             ],
-            onSelected: (value)  {
-              if(value == 1) {
+            onSelected: (value) {
+              /*if (value == 1) {
                 setState(() {
-                  DatabaseDriftHelper.customerDao?.deleteCustomer(widget.customer.id);
+                  DatabaseDriftHelper.customerDao
+                      ?.deleteCustomer(widget.customer.id);
                   Navigator.pop(context);
                 });
-              }
+              }*/
             },
           )
         ],
@@ -325,7 +347,8 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
         decoration: BoxDecoration(
             color: theme.colorScheme.background,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(size.width*0.04), topRight: Radius.circular(size.width*0.04))),
+                topLeft: Radius.circular(size.width * 0.04),
+                topRight: Radius.circular(size.width * 0.04))),
         child: Stack(
           children: [
             Positioned(
@@ -346,12 +369,12 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  widget.customer.name,
+                                  widget.otherUser.name,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 18),
                                 ),
-                                Text(widget.customer.phoneNumber)
+                                Text(widget.otherUser.phoneNumber)
                               ],
                             ),
                             Row(
@@ -362,7 +385,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                                       normalCall();
                                     },
                                     icon: const Icon(Icons.call)),
-                               /* IconButton(
+                                /* IconButton(
                                     onPressed: () {},
                                     icon: const Icon(Icons.more_vert))*/
                               ],
@@ -443,9 +466,14 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                               children: [
                                 InkWell(
                                   onTap: () async {
-                                    if(finalAmount > 0 || finalAmount < 0) {
-                                      List<CustomerAmount> data = (await amountHistory).reversed.toList();
-                                      File file = await PdfApi.generateCenteredText(data, widget.customer);
+                                    if (finalAmount > 0 || finalAmount < 0) {
+                                      /*List<CustomerAmount> data =
+                                          (await amountHistory)
+                                              .reversed
+                                              .toList();
+                                      File file =
+                                          await PdfApi.generateCenteredText(
+                                              data, widget.otherUser);
 
                                       print("File downloaded ${file.path}");
                                       Navigator.push(
@@ -454,7 +482,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                                           builder: (context) =>
                                               PDFScreen(path: file.path),
                                         ),
-                                      );
+                                      );*/
                                     }
                                   },
                                   child: Column(
@@ -640,111 +668,99 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
 
   Widget customerAmountHistory(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return FutureBuilder(
-        future: amountHistory,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              final amountHistory = snapshot.data;
-              return ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  reverse: true,
-                  itemCount: amountHistory!.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    bool isCredit = amountHistory[index].isCredit;
-                    return Container(
-                      color: Theme.of(context).colorScheme.secondary.withAlpha(25),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: size.width * 0.05,
-                          vertical: size.height * 0.01),
-                      child: Column(
-                        children: [
-                          Row(
+    return (widget.otherUser.amountHistory == null ||
+            widget.otherUser.amountHistory == [])
+        ? ListView.builder(
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            reverse: true,
+            itemCount: widget.otherUser.amountHistory?.length,
+            itemBuilder: (BuildContext context, int index) {
+              bool? isCredit = widget.otherUser.amountHistory?[index].isCredit;
+              return Container(
+                color: Theme.of(context).colorScheme.secondary.withAlpha(25),
+                padding: EdgeInsets.symmetric(
+                    horizontal: size.width * 0.05,
+                    vertical: size.height * 0.01),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                            child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget
+                                      .otherUser.amountHistory![index].dateTime,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  widget.otherUser.amountHistory![index]
+                                      .description,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w400),
+                                )
+                              ],
+                            )
+                          ],
+                        )),
+                        Expanded(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(
-                                  child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${amountHistory[index].date} : ${amountHistory[index].time}",
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                      Text(
-                                        amountHistory[index].message,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w400),
-                                      )
-                                    ],
-                                  )
-                                ],
-                              )),
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      (isCredit == true)
-                                          ? "-"
-                                          : "₹ ${amountHistory[index].amount}",
-                                      style: const TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                    Text(
-                                        (isCredit == true)
-                                            ? "₹ ${amountHistory[index].amount}"
-                                            : "-",
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.green,
-                                            fontWeight: FontWeight.w600)),
-                                  ],
-                                ),
-                              )
+                              Text(
+                                (isCredit == true)
+                                    ? "-"
+                                    : "₹ ${widget.otherUser.amountHistory![index].amount}",
+                                style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              Text(
+                                  (isCredit == true)
+                                      ? "₹ ${widget.otherUser.amountHistory![index].amount}"
+                                      : "-",
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.w600)),
                             ],
                           ),
-                          const Divider()
-                        ],
-                      ),
-                    );
-                  });
-            } else {
-              return Stack(
-                children: [
-                  Center(
-                    child: Column(
-                      children: [
-                        SizedBox(height: size.height * .2),
-                        SvgPicture.asset(
-                          'assets/not_found.svg',
-                          semanticsLabel: "Not Found",
-                          height: size.height * .2,
-                          width: size.width * .2,
-                        ),
-                        const Text("No amount history found"),
+                        )
                       ],
                     ),
-                  ),
-                ],
+                    const Divider()
+                  ],
+                ),
               );
-            }
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        });
+            })
+        : Stack(
+            children: [
+              Center(
+                child: Column(
+                  children: [
+                    SizedBox(height: size.height * .2),
+                    SvgPicture.asset(
+                      'assets/not_found.svg',
+                      semanticsLabel: "Not Found",
+                      height: size.height * .2,
+                      width: size.width * .2,
+                    ),
+                    const Text("No amount history found"),
+                  ],
+                ),
+              ),
+            ],
+          );
   }
 
   Future<void> getReport() async {
