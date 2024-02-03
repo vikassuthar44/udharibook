@@ -1,7 +1,8 @@
 class Constant {
 
 
-  //Firebase
+  //Firebase Collection Path
+  static const FIREBASE_COLLECTION_USER = "users";
 
 
 

@@ -406,7 +406,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                   customers[index].phoneNumber),
                                             ),
                                           ),
-                                          customers[index].totalAmountGet > 0
+                                          (customers[index].totalAmountGet -
+                                                      customers[index]
+                                                          .totalAmountGive) >
+                                                  0
                                               ? Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.center,
@@ -423,21 +426,18 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                     ),
                                                   ],
                                                 )
-                                              : customers[index]
-                                                          .totalAmountGet ==
-                                                      0.0
-                                                  ? const Text(
-                                                      "₹ 0.0",
-                                                      style: TextStyle(
-                                                          color: Colors.red),
-                                                    )
-                                                  : Column(
+                                              : (customers[index]
+                                                              .totalAmountGet -
+                                                          customers[index]
+                                                              .totalAmountGive) <
+                                                      0
+                                                  ? Column(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
                                                               .center,
                                                       children: [
                                                         Text(
-                                                          "₹ ${customers[index].totalAmountGet}",
+                                                          "₹ ${customers[index].totalAmountGive}",
                                                           style:
                                                               const TextStyle(
                                                                   color: Colors
@@ -447,9 +447,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                           "You Will Give",
                                                           style: TextStyle(
                                                               color:
-                                                                  Colors.green),
+                                                                  Colors.red),
                                                         ),
                                                       ],
+                                                    )
+                                                  : const Text(
+                                                      "₹ 0.0",
+                                                      style: TextStyle(
+                                                          color: Colors.red),
                                                     )
                                         ],
                                       ),
