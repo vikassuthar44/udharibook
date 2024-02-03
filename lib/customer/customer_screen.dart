@@ -207,7 +207,9 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                                   customerAmount.text,
                                   customerDescription.text,
                                   isCredit,
-                                  "qwdqwfdqwe");
+                                  "qwdqwfdqwe",
+                                widget.otherUser
+                              );
                               Navigator.pop(context);
                             },
                             child: const Text("Save"))),
@@ -668,8 +670,9 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
 
   Widget customerAmountHistory(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return (widget.otherUser.amountHistory == null ||
-            widget.otherUser.amountHistory == [])
+    print("customer details ${widget.otherUser.amountHistory!.length.toString()}");
+    return (widget.otherUser.amountHistory != null ||
+            widget.otherUser.amountHistory != [])
         ? ListView.builder(
             scrollDirection: Axis.vertical,
             shrinkWrap: true,

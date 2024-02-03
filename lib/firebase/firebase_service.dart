@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_khata/profile/own_profile.dart';
+import 'package:easy_khata/util/Cosntant.dart';
 import 'package:easy_khata/util/myshared_preference.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
@@ -86,104 +87,61 @@ class FirebaseService {
     }
   }
 
-  static Future<void> addAmountHistory(String userId, String amount,
-      String description, bool isCredit, String dateTime) async {
+  static Future<void> addAmountHistory(
+      String userId,
+      String amount,
+      String description,
+      bool isCredit,
+      String dateTime,
+      OtherUser otherUser) async {
     String? ownUserId = MySharedPreference.getUserId();
-    
-    CollectionReference collectionReference = FirebaseFirestore.instance.collection("collectionPath")
-  }
 
-/*static Future<void> addAmountHistory(String userId, String amount,
-      String description, bool isCredit, String dateTime) async {
-    try {
-      String? ownUserId = MySharedPreference.getUserId();
-      //print("addAmountHistory userID $userId");
-      // Get a reference to the collection
-      CollectionReference collectionRef =
-          FirebaseFirestore.instance.collection("users");
+    CollectionReference collectionReference = FirebaseFirestore.instance
+        .collection(Constant.FIREBASE_COLLECTION_USER);
 
-      // Get a reference to the specific document using its ID
-      DocumentReference documentRef = collectionRef.doc(ownUserId);
+    DocumentReference documentReference = collectionReference.doc(ownUserId);
 
-      // Fetch the document data
-      DocumentSnapshot documentSnapshot = await documentRef.get();
+    DocumentSnapshot documentSnapshot = await documentReference.get();
 
-      print("addAmountHistory userID $userId");
-      // Check if the document exists
-      if (documentSnapshot.exists) {
-        Map<String, dynamic> dataMap =
-            documentSnapshot.data() as Map<String, dynamic>;
+    Map<String, dynamic> dataMap =
+        documentSnapshot.data() as Map<String, dynamic>;
 
-        // Find the user by userId
-        Map<String, dynamic>? userToUpdate;
-        int userIndex = -1;
+    // Find the user by userId
+    int userIndex = -1;
 
-        for (int i = 0; i < dataMap['otherUsers'].length; i++) {
-          if (dataMap['otherUsers'][i]['userId'] == userId) {
-            userToUpdate = dataMap['otherUsers'][i];
-            userIndex = i;
-            break;
-          }
-        }
+    List<Map<String, dynamic>> otherUsers = [];
 
-        */ /*userToUpdate?['amountHistory'].add({
-          AmountHistory.toJson(AmountHistory(
-              amount: double.parse(amount),
-              isCredit: isCredit,
-              dateTime: dateTime,
-              description: description))
-        });*/ /*
-
-        // Update the user in the existingData
-        //dataMap['otherUsers'][userIndex] = userToUpdate;
-
-        // Update the collection in Firebase
-        //await documentRef.set(dataMap);
-        List<OtherUser> otherUsers =
-        await documentRef.update({
-          'otherUsers': FieldValue.arrayUnion([
-
-          ])
-        });
-
-        */ /*OwnProfile ownProfile = OwnProfile.fromJson(dataMap);
-        // Find the OtherUser whose userId matches the specified userId
-        //OtherUser? targetOtherUser = ownProfile.otherUsers?.firstWhereOrNull((user) => user.userId == otherUserId);
-        print("addAmountHistory dataMap $dataMap");
-        OtherUser otherUser = ownProfile.otherUsers!
-            .firstWhere((otherUser) => otherUser.userId == userId);
-        print("addAmountHistory other user before $otherUser");
-        otherUser.amountHistory!.add(
-            //AmountHistory.toJson(
-            AmountHistory(
-                amount: double.parse(amount),
-                isCredit: isCredit,
-                description: description,
-                dateTime: dateTime
-                //)
-                ));
-
-        print("addAmountHistory other user list after ${otherUser.amountHistory}");
-        await documentRef.set({
-          'otherUsers': FieldValue.arrayUnion([
-            otherUser
-            */ /* */ /*OtherUser.toJson(OtherUser(
-                userId: ,
-                name: name,
-                phoneNumber: phoneNumber,
-                totalAmountGive: 0.0,
-                totalAmountGet: 0.0,
-                amountHistory: []))*/ /* */ /*
-          ]),
-        });*/ /*
-        print("addAmountHistory amount updated");
-      } else {
-        print('addAmountHistory Document does not exist');
-        return;
+    for (int i = 0; i < dataMap['otherUsers'].length; i++) {
+      otherUsers.add(dataMap['otherUsers'][i]);
+      if (dataMap['otherUsers'][i]['userId'] == userId) {
+        userIndex = i;
       }
-    } on Exception catch (_) {
-      print("addAmountHistory Exception Getting $_");
-      return;
     }
-  }*/
+
+    if(isCredit) {
+      otherUsers[userIndex]['totalAmountGive'] = (otherUsers[userIndex]['totalAmountGive'] as num).toDouble() + double.parse(amount);
+      dataMap['totalAmountGive'] = (dataMap['totalAmountGive'] as num).toDouble() + double.parse(amount);
+      MySharedPreference.setTotalAmountGive(
+          (dataMap['totalAmountGive'] as num).toString());
+    } else {
+      otherUsers[userIndex]['totalAmountGet'] = (otherUsers[userIndex]['totalAmountGet'] as num).toDouble() + double.parse(amount);
+      dataMap['totalAmountGet'] = (dataMap['totalAmountGet'] as num).toDouble() + double.parse(amount);
+      MySharedPreference.setTotalAmountGet(
+          (dataMap['totalAmountGet'] as num).toString());
+    }
+
+    Map<String, dynamic> newAmountHistoryData = AmountHistory.toJson(
+        AmountHistory(
+            amount: double.parse(amount),
+            isCredit: isCredit,
+            dateTime: dateTime,
+            description: description));
+
+    otherUsers[userIndex]['amountHistory'].add(newAmountHistoryData);
+    await documentReference.update({
+      'otherUsers': otherUsers,
+      'totalAmountGet':(dataMap['totalAmountGet'] as num).toDouble(),
+      'totalAmountGive': (dataMap['totalAmountGive'] as num).toDouble()
+    });
+  }
 }

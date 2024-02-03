@@ -95,7 +95,7 @@ class AmountHistory {
   AmountHistory.fromJson(Map<dynamic, dynamic> json)
       : this(
           amount: (json['amount'] as num).toDouble(),
-          isCredit: (json['isGive'] as bool),
+          isCredit: (json['isCredit'] as bool),
           dateTime: (json['dateTime'] as String),
           description: (json['description'] as String),
         );
