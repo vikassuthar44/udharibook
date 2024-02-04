@@ -1,3 +1,4 @@
+/*
 import 'package:drift/drift.dart';
 import 'dart:io';
 import 'package:drift/native.dart';
@@ -17,13 +18,15 @@ class MyDatabase extends _$MyDatabase {
   @override
   int get schemaVersion => 1;
 
+*/
 /*Future<void> addCustomer(CustomerTableCompanion entry) {
     return into(customerTable).insert(entry);
   }
 
   Future<void> addCustomerAmount(CustomerAmountTableCompanion entry) {
     return into(customerAmountTable).insert(entry);
-  }*/
+  }*//*
+
 }
 
 LazyDatabase _openConnection() {
@@ -108,3 +111,4 @@ class CustomerDao extends DatabaseAccessor<MyDatabase> with _$CustomerDaoMixin {
     return customerAmountHistories;
   }
 }
+*/

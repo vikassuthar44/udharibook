@@ -1,3 +1,4 @@
+/*
 
 import 'package:drift/drift.dart';
 
@@ -17,3 +18,4 @@ class CustomerAmountTable extends Table {
 
   TextColumn get message => text().nullable()();
 }
+*/

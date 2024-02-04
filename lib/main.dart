@@ -23,7 +23,7 @@ void main() async {
 }
 
 Future<bool> initialInilization() async {
-  await DatabaseDriftHelper.registerDatabase();
+  //await DatabaseDriftHelper.registerDatabase();
   return true;
 }
 

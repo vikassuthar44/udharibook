@@ -1,3 +1,4 @@
+/*
 import 'package:drift/drift.dart';
 
 class CustomerTable extends Table {
@@ -10,3 +11,4 @@ class CustomerTable extends Table {
 
   RealColumn get finalAmount => real().nullable()();
 }
+*/

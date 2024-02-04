@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:easy_khata/firebase/firebase_service.dart';
 import 'package:easy_khata/profile/own_profile.dart';
+import 'package:easy_khata/util/common_widget/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -36,62 +37,15 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
   //late Future<List<CustomerAmount>> amountHistory;
   double finalAmount = 0.0;
 
-  /*void _addAmountEntry(bool isCredit) async {
-    setState(() {
-      DatabaseDriftHelper.customerDao?.addCustomerAmount(CustomerAmount(
-          customerId: widget.customer.id,
-          amount: double.parse(customerAmount.value.text),
-          isCredit: isCredit,
-          date: customerDate,
-          message: customerDescription.value.text,
-          time: customerTime));
-      amountHistory = getAmountHistory();
-      updateCustomer();
-      finalAmountCalculate(amountHistory);
+  void fetchUserDetails(String userId) {
+    setState(() async {
+      widget.otherUser = (await FirebaseService.getOtherUser(userId))!;
     });
-    //widget.customer.customerAmount.reversed;
-  }*/
-
-  /*Future<void> _selectDate(BuildContext context, setState) async {
-    DateTime selectedDate = DateTime.now();
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        customerDate = Util.dateSelection(picked);
-        print("selected date $customerDate");
-      });
-    }
-  }*/
-
-  /*Future<void> _selectTime(BuildContext context, setState) async {
-    TimeOfDay selectedTime = TimeOfDay.now();
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: selectedTime,
-    );
-    if (pickedTime != null && pickedTime != selectedTime) {
-      setState(() {
-        print("selected time before $pickedTime");
-        customerTime = Util.timeSelection(pickedTime);
-        print("selected time $customerTime");
-      });
-    }
-  }*/
-
-  /*void updateCustomer() async {
-    final sds = await amountHistory;
-    setState(() {
-      DatabaseDriftHelper.customerDao?.updateCustomer(
-          widget.customer.id, Util.finalAmountHistoryCalculate(sds));
-    });
-  }*/
+  }
 
   Future<void> _addAmountEntryDialog(
       BuildContext context, bool isCredit, Size size) {
+    bool isButtonLoading = false;
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -144,7 +98,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                       InkWell(
                         onTap: () {
                           setState(() {
-                            //_selectDate(context, setState);
+                            _selectDate(context, setState);
                           });
                         },
                         child: Container(
@@ -167,7 +121,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                       InkWell(
                         onTap: () {
                           setState(() {
-                            //_selectTime(context, setState);
+                            _selectTime(context, setState);
                           });
                         },
                         child: Container(
@@ -192,7 +146,29 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                     height: 20,
                   ),
                   Center(
-                    child: Container(
+                    child: CustomButton(
+                      isLoading: isButtonLoading,
+                      buttonLabel: "Save",
+                      isButtonEnable: true,
+                      onTap: () {
+                        setState(() {
+                          isButtonLoading = true;
+                        });
+                        FirebaseService.addAmountHistory(
+                            widget.otherUser.userId,
+                            customerAmount.text,
+                            customerDescription.text,
+                            isCredit,
+                            "qwdqwfdqwe",
+                            widget.otherUser
+                        ).then((value) {
+                          fetchUserDetails(widget.otherUser.userId);
+                          Navigator.pop(context);
+                        });
+                      },
+                    ),
+                  )
+                    /*child: Container(
                         padding:
                             EdgeInsets.symmetric(horizontal: size.width * 0.1),
                         decoration: const BoxDecoration(
@@ -209,11 +185,14 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
                                   isCredit,
                                   "qwdqwfdqwe",
                                 widget.otherUser
-                              );
-                              Navigator.pop(context);
+                              ).then((value) {
+                                fetchUserDetails(widget.otherUser.userId);
+                                Navigator.pop(context);
+                              });
+
                             },
                             child: const Text("Save"))),
-                  )
+                  )*/
                 ],
               ),
             ),
@@ -229,19 +208,6 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
     finalAmountCalculate(widget.otherUser.amountHistory);
     super.initState();
   }
-
-  /*Future<List<CustomerAmount>> getAmountHistory() async {
-    return DatabaseDriftHelper.customerDao!.getCustomerAmountHistory(widget
-        .otherUser
-        .id); //DBHelper().getCustomerAmountHistory(widget.customer.id);
-  }*/
-
-  /*void finalAmountCalculate(Future<List<CustomerAmount>> customerAmount) async {
-    List<CustomerAmount> dsww = await customerAmount;
-    setState(() {
-      finalAmount = Util.finalAmountHistoryCalculate(dsww);
-    });
-  }*/
 
   void finalAmountCalculate(List<AmountHistory>? amountHistory) async {
     setState(() {
