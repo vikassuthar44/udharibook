@@ -1,3 +1,4 @@
+/*
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'DriftMyDatabase.dart';
@@ -643,3 +644,4 @@ mixin _$CustomerDaoMixin on DatabaseAccessor<MyDatabase> {
   $CustomerAmountTableTable get customerAmountTable =>
       attachedDatabase.customerAmountTable;
 }
+*/

@@ -1,10 +1,8 @@
-import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_khata/profile/own_profile.dart';
 import 'package:easy_khata/util/Cosntant.dart';
 import 'package:easy_khata/util/myshared_preference.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 
 class FirebaseService {
@@ -41,6 +39,49 @@ class FirebaseService {
         //Common.setUserDetails(userDetails);
         print("OwnProfile $userDetailsData");
         return userDetailsData.otherUsers;
+      } else {
+        print('Document does not exist');
+      }
+      print("Error found");
+      return null;
+    } catch (e) {
+      print("Eception $e");
+    }
+    return null;
+  }
+
+
+  static Future<OtherUser?> getOtherUser(String userId) async {
+    try {
+      print("called getOwnProfileDetails");
+      String? userId = MySharedPreference.getUserId();
+      print("called getOwnProfileDetails userID $userId");
+      // Get a reference to the collection
+      CollectionReference collectionRef = _fireStore.collection("users");
+
+      // Get a reference to the specific document using its ID
+      DocumentReference documentRef = collectionRef.doc(userId);
+
+      // Fetch the document data
+      DocumentSnapshot documentSnapshot = await documentRef.get();
+
+      // Check if the document exists
+      if (documentSnapshot.exists) {
+        print("Document Exist");
+        // Access the data using documentSnapshot.data()
+        //final allData = documentSnapshot.da.map((doc) => doc.data()).toList();
+        Map<String, dynamic> dataMap =
+        documentSnapshot.data() as Map<String, dynamic>;
+        print("dataMap $dataMap");
+        OwnProfile userDetailsData = OwnProfile.fromJson(dataMap);
+        print("userDetailsData $userDetailsData");
+        MySharedPreference.setTotalAmountGet(
+            userDetailsData.totalAmountGet.toString());
+        MySharedPreference.setTotalAmountGive(
+            userDetailsData.totalAmountGive.toString());
+        //Common.setUserDetails(userDetails);
+        print("OwnProfile $userDetailsData");
+        return userDetailsData.otherUsers!.firstWhere((otherUser) => otherUser.userId == userId);
       } else {
         print('Document does not exist');
       }

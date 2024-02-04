@@ -1,3 +1,4 @@
+/*
 import 'DriftMyDatabase.dart';
 
 class DatabaseDriftHelper {
@@ -10,4 +11,4 @@ class DatabaseDriftHelper {
     }
     return customerDao != null;
   }
-}
+}*/

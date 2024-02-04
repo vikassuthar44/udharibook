@@ -30,6 +30,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final customerPhoneNumber = TextEditingController();
 
   late Future<List<Customer>> customers;
+  late Future<List<OtherUser>?> otherUserList;
   late double finalCustomerAmount;
   double finalAmountGet = 0.0;
   double finalAmountGive = 0.0;
@@ -38,7 +39,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     //customerDatas = [];//CustomerMockData.getCustomerMockData();
     print("Customer Datas");
-    //getCustomers();
+    getCustomers();
     //print(customerDatas);
     super.initState();
   }
@@ -51,10 +52,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void getCustomers() async {
-    customers = DatabaseDriftHelper.customerDao!
-        .getAllCustomer(); //DBHelper().getCustomerList();
-    finalAmountGetGive(await customers);
-    //customerAmount();
+    setState(() {
+      otherUserList = FirebaseService.getOwnProfileDetails();
+    });
   }
 
   void finalAmountGetGive(List<Customer> customer) async {
@@ -79,7 +79,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     finalCustomerAmount = Util.finalCustomerAmountCalculate(await customers);
   }*/
 
-  void _addCustomer() {
+  /*void _addCustomer() {
     setState(() {
       DatabaseDriftHelper.customerDao?.addCustomer(Customer(
           name: customerName.value.text,
@@ -87,7 +87,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           finalAmount: 0.0));
       getCustomers();
     });
-  }
+  }*/
 
   Future<void> _dialogBuilder(BuildContext context, Size size) {
     bool isSubmitButtonLoading = false;
@@ -144,7 +144,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       });
                       FirebaseService.addCustomer(customerName.value.text,
                               customerPhoneNumber.value.text)
-                          ?.then((value) => Navigator.pop(context));
+                          ?.then((value) {
+                            Navigator.pop(context);
+                            getCustomers();
+                          }
+                        );
                       //Navigator.pop(context);
                     } else {
                       Fluttertoast.showToast(msg: "Please Fill Details...");
@@ -362,7 +366,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           Expanded(
             child: FutureBuilder<List<OtherUser>?>(
-                future: FirebaseService.getOwnProfileDetails(),
+                future: otherUserList,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasData && snapshot.data!.isNotEmpty) {

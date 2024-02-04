@@ -18,7 +18,9 @@ class CustomButton extends StatelessWidget {
     Size screenSize = MediaQuery.sizeOf(context);
     return InkWell(
       onTap: () {
-        onTap.call();
+        if(isButtonEnable) {
+          onTap.call();
+        }
       },
       child: Container(
         width: screenSize.width,
