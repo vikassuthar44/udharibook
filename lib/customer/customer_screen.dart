@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:easy_khata/firebase/firebase_service.dart';
 import 'package:easy_khata/profile/own_profile.dart';
 import 'package:easy_khata/util/common_widget/custom_button.dart';
+import 'package:easy_khata/util/common_widget/datetime_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -10,6 +11,8 @@ import 'package:easy_khata/database/drift_database/DatabaseDriftHelper.dart';
 import 'package:easy_khata/util/Util.dart';
 import 'package:easy_khata/util/pdf_api.dart';
 import 'package:easy_khata/util/theme.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../donwload_report/PdfScreen.dart';
@@ -25,7 +28,8 @@ class CustomerScreen extends ConsumerStatefulWidget {
   ConsumerState<CustomerScreen> createState() => _CustomerScreenState();
 }
 
-class _CustomerScreenState extends ConsumerState<CustomerScreen> {
+class _CustomerScreenState extends ConsumerState<CustomerScreen>
+    with TickerProviderStateMixin {
   final customerAmount = TextEditingController();
   final customerDescription = TextEditingController();
   String customerDate = Util.dateSelection(DateTime.now());
@@ -43,9 +47,41 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
     });
   }
 
+  Future<void> _selectDate(BuildContext context123, setState) async {
+    DateTime selectedDate = DateTime.now();
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        customerDate = Util.dateSelection(picked);
+        print("selected date $customerDate");
+      });
+    }
+  }
+
+  String? selectDate(setState) {
+    String? finalResult;
+    setState(() async {
+      DateTime? result = await DateTimePicker.selectDate(context);
+      if(result != null)  {
+        finalResult =  Util.dateSelection(result);
+        print("Result date before ${Util.dateSelection(result)}");
+      }
+    });
+    print("Result date $finalResult");
+    customerDate = Util.dateSelection(finalResult);
+    return finalResult;
+
+  }
+
   Future<void> _addAmountEntryDialog(
       BuildContext context, bool isCredit, Size size) {
     bool isButtonLoading = false;
+    bool isSuccess = false;
+    AnimationController controller = AnimationController(vsync: this);
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -53,148 +89,136 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
           builder: (context, setState) => AlertDialog(
             title: const Text('Add New Entry'),
             content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text("Amount"),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextField(
-                    maxLength: 10,
-                    controller: customerAmount,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Enter Amount',
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const Text("Add Description"),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextField(
-                    controller: customerDescription,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Enter Description',
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const Text("Add Date and Time"),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _selectDate(context, setState);
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(5)),
-                              border: Border.all(color: Colors.grey.shade500)),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.date_range),
-                              Text(" $customerDate")
-                            ],
+              child: isSuccess == false
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text("Amount"),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextField(
+                          maxLength: 10,
+                          controller: customerAmount,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Enter Amount',
                           ),
                         ),
-                      ),
-                      SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _selectTime(context, setState);
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(5)),
-                              border: Border.all(color: Colors.grey.shade500)),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.timer_outlined),
-                              Text(" $customerTime")
-                            ],
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const Text("Add Description"),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextField(
+                          controller: customerDescription,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Enter Description',
                           ),
                         ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Center(
-                    child: CustomButton(
-                      isLoading: isButtonLoading,
-                      buttonLabel: "Save",
-                      isButtonEnable: true,
-                      onTap: () {
-                        setState(() {
-                          isButtonLoading = true;
-                        });
-                        FirebaseService.addAmountHistory(
-                            widget.otherUser.userId,
-                            customerAmount.text,
-                            customerDescription.text,
-                            isCredit,
-                            "qwdqwfdqwe",
-                            widget.otherUser
-                        ).then((value) {
-                          fetchUserDetails(widget.otherUser.userId);
-                          Navigator.pop(context);
-                        });
-                      },
-                    ),
-                  )
-                    /*child: Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: size.width * 0.1),
-                        decoration: const BoxDecoration(
-                            color: Colors.blueGrey,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10))),
-                        child: TextButton(
-                            onPressed: () {
-                              //_addAmountEntry(isCredit);
-                              FirebaseService.addAmountHistory(
-                                  widget.otherUser.userId,
-                                  customerAmount.text,
-                                  customerDescription.text,
-                                  isCredit,
-                                  "qwdqwfdqwe",
-                                widget.otherUser
-                              ).then((value) {
-                                fetchUserDetails(widget.otherUser.userId);
-                                Navigator.pop(context);
-                              });
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const Text("Select Date"),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  selectDate(setState);
+                                });
+                                /*setState(() {
+                                  String? result = selectDate();
+                                  if (result == null) {
+                                    customerDate = Util.dateSelection(DateTime.now());
+                                  } else {
+                                    customerDate = result;
+                                  }
+                                });*/
 
+                                /*setState(()  {
+                                  String? result = await selectDate();
+                                  if(result != null) {
+                                    print("Result Date $result");
+                                    customerDate = result;
+                                  } else {
+                                    print("Result Date $result");
+                                  }
+                                });*/
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(5)),
+                                    border: Border.all(
+                                        color: Colors.grey.shade500)),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.date_range),
+                                    Text(" $customerDate")
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Center(
+                          child: CustomButton(
+                            isLoading: isButtonLoading,
+                            buttonLabel: "Save",
+                            isButtonEnable: true,
+                            onTap: () {
+                              setState(() {
+                                isButtonLoading = true;
+                              });
+                              FirebaseService.addAmountHistory(
+                                      widget.otherUser.userId,
+                                      customerAmount.text,
+                                      customerDescription.text,
+                                      isCredit,
+                                      "qwdqwfdqwe",
+                                      widget.otherUser)
+                                  .then((value) {
+                                fetchUserDetails(widget.otherUser.userId);
+                                setState(() {
+                                  isSuccess = true;
+                                  isButtonLoading = false;
+                                });
+                                //Navigator.pop(context);
+                              }).onError((error, stackTrace) {
+                                Fluttertoast.showToast(
+                                    msg: "Something Went Wrong try again...");
+                              });
                             },
-                            child: const Text("Save"))),
-                  )*/
-                ],
-              ),
+                          ),
+                        )
+                      ],
+                    )
+                  : Lottie.asset('assets/images/success.json',
+                      controller: controller,
+                      repeat: false,
+                      width: 200,
+                      height: 200, onLoaded: (composition) {
+                      controller
+                        ..duration = composition.duration
+                        ..forward().whenComplete(() => Navigator.pop(context));
+                    }),
             ),
           ),
         );
@@ -636,7 +660,8 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
 
   Widget customerAmountHistory(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    print("customer details ${widget.otherUser.amountHistory!.length.toString()}");
+    print(
+        "customer details ${widget.otherUser.amountHistory!.length.toString()}");
     return (widget.otherUser.amountHistory != null ||
             widget.otherUser.amountHistory != [])
         ? ListView.builder(
