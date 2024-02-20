@@ -40,7 +40,7 @@ class OwnProfile {
 }
 
 class OtherUser {
-  late String userId;
+  late String? userId;
   late String name;
   late String phoneNumber;
   late double totalAmountGet;

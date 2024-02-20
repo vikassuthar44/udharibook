@@ -41,7 +41,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen>
   //late Future<List<CustomerAmount>> amountHistory;
   double finalAmount = 0.0;
 
-  void fetchUserDetails(String userId) {
+  void fetchUserDetails(String? userId) {
     setState(() async {
       widget.otherUser = (await FirebaseService.getOtherUser(userId))!;
     });
@@ -62,19 +62,16 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen>
     }
   }
 
-  String? selectDate(setState) {
-    String? finalResult;
-    setState(() async {
-      DateTime? result = await DateTimePicker.selectDate(context);
-      if(result != null)  {
-        finalResult =  Util.dateSelection(result);
-        print("Result date before ${Util.dateSelection(result)}");
-      }
-    });
-    print("Result date $finalResult");
-    customerDate = Util.dateSelection(finalResult);
-    return finalResult;
+  Future<void>? selectDate(setState) async {
+    DateTime? result = await DateTimePicker.selectDate(context);
+    if (result != null) {
+      setState(() {
+        customerDate = Util.dateSelection(result);
+      });
 
+      print("Result date before $customerDate");
+    }
+    return;
   }
 
   Future<void> _addAmountEntryDialog(
@@ -137,24 +134,6 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen>
                                 setState(() {
                                   selectDate(setState);
                                 });
-                                /*setState(() {
-                                  String? result = selectDate();
-                                  if (result == null) {
-                                    customerDate = Util.dateSelection(DateTime.now());
-                                  } else {
-                                    customerDate = result;
-                                  }
-                                });*/
-
-                                /*setState(()  {
-                                  String? result = await selectDate();
-                                  if(result != null) {
-                                    print("Result Date $result");
-                                    customerDate = result;
-                                  } else {
-                                    print("Result Date $result");
-                                  }
-                                });*/
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
