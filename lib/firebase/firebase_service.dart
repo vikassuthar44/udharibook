@@ -51,7 +51,7 @@ class FirebaseService {
   }
 
 
-  static Future<OtherUser?> getOtherUser(String userId) async {
+  static Future<OtherUser?> getOtherUser(String? userId) async {
     try {
       print("called getOwnProfileDetails");
       String? userId = MySharedPreference.getUserId();
@@ -129,7 +129,7 @@ class FirebaseService {
   }
 
   static Future<void> addAmountHistory(
-      String userId,
+      String? userId,
       String amount,
       String description,
       bool isCredit,
