@@ -7,16 +7,10 @@ import 'package:easy_khata/util/common_widget/datetime_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:easy_khata/database/drift_database/DatabaseDriftHelper.dart';
 import 'package:easy_khata/util/Util.dart';
-import 'package:easy_khata/util/pdf_api.dart';
-import 'package:easy_khata/util/theme.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../donwload_report/PdfScreen.dart';
-import '../home/mock_data.dart';
 
 @immutable
 class CustomerScreen extends ConsumerStatefulWidget {
